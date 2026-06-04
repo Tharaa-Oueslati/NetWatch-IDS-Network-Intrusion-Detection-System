@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  netwatch:
+    build: .
+    container_name: netwatch-ids
+    ports:
+      - "5000:5000"
+    # Required for live packet capture on the host network
+    # In replay/demo mode, remove these capabilities
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    network_mode: host      # Give access to host interfaces for live capture
+    volumes:
+      - ./rules:/app/rules  # Hot-reload rules without rebuilding
+      - ./pcap_samples:/app/pcap_samples
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  # Optional: run tests
+  test:
+    build: .
+    container_name: netwatch-tests
+    command: pytest tests/ -v --tb=short
+    profiles:
+      - test

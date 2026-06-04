@@ -1,0 +1,247 @@
+{
+  "version": "1.0",
+  "description": "NetWatch-IDS Default Ruleset — MITRE ATT&CK mapped",
+  "rules": [
+
+    {
+      "id": "NW-001",
+      "name": "Port Scan Detected",
+      "description": "Multiple SYN packets to different ports from one source — classic Nmap-style port scan.",
+      "severity": "HIGH",
+      "mitre_technique": "T1046",
+      "mitre_tactic": "Discovery",
+      "enabled": true,
+      "conditions": {
+        "proto": ["TCP"],
+        "flags": ["S"],
+        "flags_not": ["A"],
+        "threshold": {
+          "track": "dst_port",
+          "count": 15,
+          "seconds": 5
+        }
+      }
+    },
+
+    {
+      "id": "NW-002",
+      "name": "SYN Flood (DoS)",
+      "description": "High-volume SYN packets without ACK — potential TCP SYN flood denial-of-service attack.",
+      "severity": "CRITICAL",
+      "mitre_technique": "T1498",
+      "mitre_tactic": "Impact",
+      "enabled": true,
+      "conditions": {
+        "proto": ["TCP"],
+        "flags": ["S"],
+        "flags_not": ["A"],
+        "threshold": {
+          "track": "count",
+          "count": 100,
+          "seconds": 3
+        }
+      }
+    },
+
+    {
+      "id": "NW-003",
+      "name": "Telnet Traffic",
+      "description": "Unencrypted Telnet session detected — credentials may be transmitted in cleartext.",
+      "severity": "HIGH",
+      "mitre_technique": "T1021.004",
+      "mitre_tactic": "Lateral Movement",
+      "enabled": true,
+      "conditions": {
+        "proto": ["TCP"],
+        "dst_ports": [23]
+      }
+    },
+
+    {
+      "id": "NW-004",
+      "name": "FTP Cleartext Login",
+      "description": "FTP control connection detected — credentials sent in plaintext over port 21.",
+      "severity": "MEDIUM",
+      "mitre_technique": "T1078",
+      "mitre_tactic": "Initial Access",
+      "enabled": true,
+      "conditions": {
+        "proto": ["TCP"],
+        "dst_ports": [21]
+      }
+    },
+
+    {
+      "id": "NW-005",
+      "name": "ARP Spoofing Attempt",
+      "description": "Rapid ARP replies detected — may indicate ARP cache poisoning / MITM attempt.",
+      "severity": "HIGH",
+      "mitre_technique": "T1557.002",
+      "mitre_tactic": "Collection",
+      "enabled": true,
+      "conditions": {
+        "proto": ["ARP"],
+        "threshold": {
+          "track": "count",
+          "count": 10,
+          "seconds": 5
+        }
+      }
+    },
+
+    {
+      "id": "NW-006",
+      "name": "ICMP Flood",
+      "description": "High-rate ICMP packets — potential ping flood or network reconnaissance.",
+      "severity": "MEDIUM",
+      "mitre_technique": "T1595.001",
+      "mitre_tactic": "Reconnaissance",
+      "enabled": true,
+      "conditions": {
+        "proto": ["ICMP"],
+        "threshold": {
+          "track": "count",
+          "count": 50,
+          "seconds": 5
+        }
+      }
+    },
+
+    {
+      "id": "NW-007",
+      "name": "SSH Brute Force",
+      "description": "Multiple TCP connections to SSH port from the same source — possible brute force attack.",
+      "severity": "HIGH",
+      "mitre_technique": "T1110",
+      "mitre_tactic": "Credential Access",
+      "enabled": true,
+      "conditions": {
+        "proto": ["TCP"],
+        "dst_ports": [22],
+        "threshold": {
+          "track": "count",
+          "count": 10,
+          "seconds": 30
+        }
+      }
+    },
+
+    {
+      "id": "NW-008",
+      "name": "RDP Exposure",
+      "description": "Connection attempt to RDP port 3389 — exposed Remote Desktop is a common attack vector.",
+      "severity": "MEDIUM",
+      "mitre_technique": "T1021.001",
+      "mitre_tactic": "Lateral Movement",
+      "enabled": true,
+      "conditions": {
+        "proto": ["TCP"],
+        "dst_ports": [3389]
+      }
+    },
+
+    {
+      "id": "NW-009",
+      "name": "DNS Tunneling Suspect",
+      "description": "Unusually high UDP traffic to port 53 — may indicate data exfiltration via DNS tunneling.",
+      "severity": "HIGH",
+      "mitre_technique": "T1071.004",
+      "mitre_tactic": "Command and Control",
+      "enabled": true,
+      "conditions": {
+        "proto": ["UDP"],
+        "dst_ports": [53],
+        "threshold": {
+          "track": "count",
+          "count": 100,
+          "seconds": 10
+        }
+      }
+    },
+
+    {
+      "id": "NW-010",
+      "name": "SMB/NetBIOS Scan",
+      "description": "Connection attempts to SMB ports — EternalBlue and ransomware often probe these ports.",
+      "severity": "HIGH",
+      "mitre_technique": "T1021.002",
+      "mitre_tactic": "Lateral Movement",
+      "enabled": true,
+      "conditions": {
+        "proto": ["TCP"],
+        "dst_ports": [445, 139, 137]
+      }
+    },
+
+    {
+      "id": "NW-011",
+      "name": "HTTP Cleartext Credential Suspect",
+      "description": "POST request over unencrypted HTTP — possible credential submission in cleartext.",
+      "severity": "MEDIUM",
+      "mitre_technique": "T1557.001",
+      "mitre_tactic": "Collection",
+      "enabled": true,
+      "conditions": {
+        "proto": ["TCP"],
+        "dst_ports": [80],
+        "payload_contains": ["POST", "password=", "passwd=", "login="]
+      }
+    },
+
+    {
+      "id": "NW-012",
+      "name": "Null TCP Scan",
+      "description": "TCP packet with no flags set — used by Nmap null scan to evade basic firewalls.",
+      "severity": "MEDIUM",
+      "mitre_technique": "T1046",
+      "mitre_tactic": "Discovery",
+      "enabled": true,
+      "conditions": {
+        "proto": ["TCP"],
+        "flags": []
+      }
+    },
+
+    {
+      "id": "NW-013",
+      "name": "XMAS Tree Scan",
+      "description": "TCP packet with FIN+PSH+URG flags — Nmap XMAS scan technique to enumerate open ports.",
+      "severity": "MEDIUM",
+      "mitre_technique": "T1046",
+      "mitre_tactic": "Discovery",
+      "enabled": true,
+      "conditions": {
+        "proto": ["TCP"],
+        "flags": ["F", "P", "U"]
+      }
+    },
+
+    {
+      "id": "NW-014",
+      "name": "Suspicious High Port",
+      "description": "Outbound connection to an uncommon high port — may indicate C2 beacon or backdoor.",
+      "severity": "LOW",
+      "mitre_technique": "T1571",
+      "mitre_tactic": "Command and Control",
+      "enabled": true,
+      "conditions": {
+        "proto": ["TCP"],
+        "dst_ports": [4444, 4445, 5555, 6666, 7777, 8888, 9999, 31337]
+      }
+    },
+    {
+  "id": "NW-015",
+  "name": "Suspicious Tunis Traffic",
+  "description": "Traffic from/to Tunisia (custom rule)",
+  "severity": "MEDIUM",
+  "mitre_technique": "T1071",
+  "mitre_tactic": "Command and Control",
+  "enabled": true,
+  "conditions": {
+    "dst_ports": [80, 443, 53],
+    "payload_contains": ["tn", "tunisia"]
+  }
+}
+
+  ]
+}

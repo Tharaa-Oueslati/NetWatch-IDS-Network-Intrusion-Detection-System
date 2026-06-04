@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.env
+venv/
+.venv/
+*.pcap
+!pcap_samples/sample.pcap
+.pytest_cache/
+*.log
